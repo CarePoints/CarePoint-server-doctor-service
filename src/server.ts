@@ -4,6 +4,7 @@ import cors from "cors";
 import router from './presentation/routes/doctorRouter';
 import { setupRabbitMQ } from './infastructure/rabbitmq/producer';
 import { connectToRabbitMQ }from './infastructure/rabbitmq/consumer';
+import { connectToRabbitMQForAppoinment } from './infastructure/rabbitmq/appoinmentConsumer';
 // import {RabbitMQProducer} from '../src/infastructure/rabbitmq/producer'
 const PORT = 5000
 
@@ -21,7 +22,7 @@ setupRabbitMQ((channel) => {
 });
 
 connectToRabbitMQ('Queue1');
-
+connectToRabbitMQForAppoinment('Appoinment')
 app.listen(PORT, () => {
     console.log(`server is runnign ${PORT}`);
   });

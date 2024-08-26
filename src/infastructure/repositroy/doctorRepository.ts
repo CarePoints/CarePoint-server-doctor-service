@@ -8,11 +8,17 @@ import {
 } from "../../utils/authUtlis";
 import { User, UserDocument } from "../database/model/userModel";
 import bcrypt from "bcrypt";
+import { AppError } from "../../middleware/errorMiddleware";
+import DoctorAppointment from "../database/model/appoinmentsDoctorside";
 
 export class DoctorRepository implements IDoctorRepository {
   async findUserExists(email: string) {
-    const user = await User.findOne({ email });
-    return user;
+    try {
+      const user = await User.findOne({ email });
+      return user;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
+    }
   }
   async saveNewUser(values: registerUser) {
     try {
@@ -26,7 +32,6 @@ export class DoctorRepository implements IDoctorRepository {
         createdAt,
       } = values;
 
-      console.log("Received values:", values); // Inspect the values
       let hashedPass;
 
       let existingUser = await User.findOne({ email });
@@ -43,7 +48,6 @@ export class DoctorRepository implements IDoctorRepository {
         existingUser.createdAt = createdAt;
 
         await existingUser.save();
-        console.log("Updated existing user with new details:", existingUser);
         return existingUser;
       } else {
         hashedPass = await hashPassword(password);
@@ -58,41 +62,41 @@ export class DoctorRepository implements IDoctorRepository {
           createdAt,
         });
 
-        console.log("Created new user:", newUser);
         await newUser.save();
         return newUser;
       }
     } catch (error) {
-      console.error("Error saving user:", error);
-      return null;
+      throw new AppError("Database error occurred while creating user.", 500);
     }
   }
 
   async otpVerify(otp: any) {
-    const otpObject = otp;
-    const otpString = otpObject.otp;
-    let otpNumber = parseInt(otpString, 10);
-    console.log("Otp repositroy working", otpNumber);
-    const user = await User.findOne({ otp: otpNumber });
-    console.log("otp userdate is", user);
+    try {
+      const otpObject = otp;
+      const otpString = otpObject.otp;
+      let otpNumber = parseInt(otpString, 10);
+      const user = await User.findOne({ otp: otpNumber });
 
-    if (user && user.createdAt) {
-      const createdAt = new Date(user.createdAt);
-      const newTime = new Date();
-      const timeDifference = newTime.getTime() - createdAt.getTime();
-      const difference = Math.floor(timeDifference / (1000 * 60));
+      if (user && user.createdAt) {
+        const createdAt = new Date(user.createdAt);
+        const newTime = new Date();
+        const timeDifference = newTime.getTime() - createdAt.getTime();
+        const difference = Math.floor(timeDifference / (1000 * 60));
 
-      if (difference > 1) {
+        if (difference > 1) {
+          return null;
+        }
+        user.isVerified = true;
+        user.otp = 0;
+        await user.save();
+        console.log("final user is", user);
+
+        return user ? user : null;
+      } else {
         return null;
       }
-      user.isVerified = true;
-      user.otp = 0;
-      await user.save();
-      console.log("final user is", user);
-
-      return user ? user : null;
-    } else {
-      return null;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
   }
 
@@ -121,29 +125,36 @@ export class DoctorRepository implements IDoctorRepository {
       const token = generateToken(user);
       return { token, userDoc };
     } catch (err) {
-      console.log(err);
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-    return null;
   }
 
   async getUserById(userId: string) {
-    const user = await User.findById(userId);
-    if (!user) {
-      return null;
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-    return user;
   }
   async refreashToken(oldToken: string) {
-    const decodedToken = verifyToken(oldToken);
-    if (typeof decodedToken !== "string" && decodedToken.id) {
-      const existingUser = await User.findById(decodedToken.id);
-      if (!existingUser) {
-        throw new Error("user not found");
+    try {
+      const decodedToken = verifyToken(oldToken);
+      if (typeof decodedToken !== "string" && decodedToken.id) {
+        const existingUser = await User.findById(decodedToken.id);
+        if (!existingUser) {
+          throw new Error("user not found");
+        }
+        const newToken = generateRefreshToken(existingUser);
+        return newToken;
+      } else {
+        throw new Error("Invalid token payload");
       }
-      const newToken = generateRefreshToken(existingUser);
-      return newToken;
-    } else {
-      throw new Error("Invalid token payload");
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
   }
 
@@ -167,9 +178,6 @@ export class DoctorRepository implements IDoctorRepository {
         bio,
         onCallAvailability,
       } = formValues;
-
-      console.log("Form Values:", formValues);
-      console.log("Email:", email);
 
       // Find the doctor by email
       const doctor = await User.findOne({ email });
@@ -197,90 +205,147 @@ export class DoctorRepository implements IDoctorRepository {
 
       return null;
     } catch (error) {
-      console.error("Error in verification:", error);
-      return null;
+      throw new AppError("Database error occurred while creating user.", 500);
     }
   }
 
   async getDocData(email: string) {
-    if (!email) {
-      return null;
+    try {
+      if (!email) {
+        return null;
+      }
+      const response = await User.findOne({ email });
+      if (!response) {
+        return null;
+      }
+      return response;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-    const response = await User.findOne({ email });
-    if (!response) {
-      return null;
-    }
-    return response;
   }
 
-  async updateDoc(doctorForm: UserDocument) {
-    console.log("form value are", doctorForm);
-    const email = doctorForm.email;
-    if (!email) {
-      return false;
+  async updateDoc(doctorForm: UserDocument,image:string) {
+    try {
+      
+      if(image){
+        doctorForm.profilePic = image
+      }
+      console.log('doctorform is', doctorForm);
+      
+      const email = doctorForm.email;
+      if (!email) {
+        return false;
+      }
+      const doctorData = await User.findOne({ email });
+      if (!doctorData) {
+        return false;
+      }
+      const response = await User.updateOne({ email }, { $set: doctorForm });
+      return true;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-    const doctorData = await User.findOne({ email });
-    if (!doctorData) {
-      return false;
-    }
-    const response = await User.updateOne({ email }, { $set: doctorForm });
-    console.log("Update successful", response);
-    return true;
   }
 
   async emailVerify(email: string) {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return null;
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return null;
+      }
+
+      const userData = {
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        password: user.password,
+        phonenumber: user.phonenumber,
+        otp: user.otp,
+        createdAt: user.createdAt,
+      };
+
+      return userData;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-
-    const userData = {
-      firstname: user.firstname,
-      lastname: user.lastname,
-      email: user.email,
-      password: user.password,
-      phonenumber: user.phonenumber,
-      otp: user.otp,
-      createdAt: user.createdAt,
-    };
-
-    return userData;
   }
 
   async forgotOtpVerify(otp: string, email: string) {
-    const user = await User.findOne({ email });
-    if (!user) {
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return null;
+      }
+
+      const otpNumber = parseInt(otp, 10);
+
+      if (isNaN(otpNumber) || user.otp === undefined) {
+        return null;
+      }
+
+      if (user.otp === otpNumber) {
+        return user;
+      }
+
       return null;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
+  }
 
-    const otpNumber = parseInt(otp, 10);
+  async isBlockDb(email: string, isBlocked: boolean) {
+    try {
+      const user = await User.findOne({ email });
 
-    if (isNaN(otpNumber) || user.otp === undefined) {
-      return null;
-    }
+      if (!user) {
+        return null;
+      }
 
-    if (user.otp === otpNumber) {
+      user.isBlocked = isBlocked;
+      await user.save();
+
       return user;
+    } catch (error) {
+      throw new AppError("Database error occurred while creating user.", 500);
     }
-
-    return null;
   }
 
-
-    async isBlockDb(email: string, isBlocked: boolean) {
-    const user = await User.findOne({ email });
-    console.log("sucess ", isBlocked);
-
-    if (!user) {
-      return null;
+  async retrieveDocData(){
+    const doctorData = await User.find();
+    if(!doctorData){
+      return null
     }
-    console.log('kkkkkkkkkkkkkkkkkkkkkkk');
+    return doctorData
+  }
+
+  async savingAppoinments(email:string,user:any,date:string,time:string,appointmentType:string){
+    try {
+      const doctor = await User.findOne({email});
+    console.log('appoinmented doctor is',doctor?._id);
+    const userData = user;
+
+    const newAppointment = new DoctorAppointment({
+      doctorId: doctor?._id,
+      user:{
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        email: userData.email,
+        phoneNumber: userData.phonenumber,
+        profilePic: userData?.profilePic
+      },
+      date: new Date(date), 
+      time,
+      status: 'pending', 
+      reason: appointmentType,
+    });
+
+    const savedAppointment = await newAppointment.save();
+    console.log('Appointment saved:', savedAppointment);
     
-    user.isBlocked = isBlocked;
-    await user.save();
-    console.log("last", user);
-
-    return user;
+    } catch (error) {
+      console.log(error)
+    }
+    
+    
   }
-
 }

@@ -25,6 +25,7 @@ router.post('/updateDocData', controller.updateDocData.bind(controller));
 router.post('/checkEmail', controller.checkEmail.bind(controller));
 router.post('/forgotPassword', controller.forgotPassword.bind(controller));
 router.post('/resetPassword',controller.resetPassword.bind(controller))
+router.get('/getDoctorData',controller.getDoctorData.bind(controller))
 
 
 

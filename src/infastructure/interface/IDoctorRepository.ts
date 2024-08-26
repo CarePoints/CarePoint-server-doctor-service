@@ -30,7 +30,9 @@ export interface IDoctorRepository{
     refreashToken(token: string): Promise<any | null>;
     verification(doctorForm:DoctorForm): Promise<UserDocument| null>;
     getDocData(email:string): Promise<UserDocument| null>
-    updateDoc(doctorForm:UserDocument) : Promise<Boolean>
+    updateDoc(doctorForm:UserDocument,image:string) : Promise<Boolean>
     emailVerify(email:string): Promise<any|null>
     forgotOtpVerify(otp:string,email:string) : Promise<UserDocument|null>    
+    retrieveDocData() : Promise<UserDocument[]| null>    
+    savingAppoinments(email:string,user:string,Date:string,time:string,appointmentType:string):Promise<void>
 }

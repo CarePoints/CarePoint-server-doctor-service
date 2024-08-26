@@ -7,142 +7,182 @@ export class DoctorController {
     this.doctorUsecase = doctorUsecase;
   }
   async registerUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.body) {
+        return null;
+      }
 
-    if (!req.body) {
-      return null;
-    }
+      const { firstname, lastname, email, password, phonenumber, role } =
+        req.body;
+      const values = {
+        firstname,
+        lastname,
+        email,
+        password,
+        phonenumber,
+        role,
+      };
 
-    const { firstname, lastname, email, password, phonenumber, role } =
-      req.body;
-    const values = { firstname, lastname, email, password, phonenumber, role };
-    console.log("values.email", email);
+      const existingUser = await this.doctorUsecase.userExists(email);
 
-    const existingUser = await this.doctorUsecase.userExists(email);
-
-    if (existingUser) {
-      console.log("existesing ");
-      const response = await this.doctorUsecase.registerUser(values);
-      return res.status(200).json({ message: response });
-    } else {
-      const response = await this.doctorUsecase.registerUser(values);
-      console.log("responsedkfjkfbhfkjgbhfjk", response);
-
-      return res.status(200).json({ message: response });
+      if (existingUser) {
+        const response = await this.doctorUsecase.registerUser(values);
+        return res.status(200).json({ message: response });
+      } else {
+        const response = await this.doctorUsecase.registerUser(values);
+        return res.status(200).json({ message: response });
+      }
+    } catch (error) {
+      next(error);
     }
   }
   async otpConfirm(req: Request, res: Response, next: NextFunction) {
-    console.log("Otp Controller working");
+    try {
 
-    let values = req.body;
-    const user = await this.doctorUsecase.otpVerification(values);
-    
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired Otp " });
+      let values = req.body;
+      const user = await this.doctorUsecase.otpVerification(values);
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired Otp " });
+      }
+      return res
+        .status(200)
+        .json({ message: "Otp Verification Successfully", user });
+    } catch (error) {
+      next(error);
     }
-    return res
-      .status(200)
-      .json({ message: "Otp Verification Successfully", user });
   }
 
   async login(req: Request, res: Response, next: NextFunction) {
-    console.log("login is working");
-    const { email, password } = req.body;
-    const result = await this.doctorUsecase.loginVerfication(email, password);
-    console.log("user datas are", result);
-    if (result) {
-      res.status(200).json({ user: result.userDoc, token: result.token });
-    } else {
-      res.status(401).json({ message: "User is not exits" });
+    try {
+      const { email, password } = req.body;
+      const result = await this.doctorUsecase.loginVerfication(email, password);
+      if (result) {
+        res.status(200).json({ user: result.userDoc, token: result.token });
+      } else {
+        res.status(401).json({ message: "User is not exits" });
+      }
+    } catch (error) {
+      next(error);
     }
   }
 
   async getUserID(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user?.id; // This should work now
+    try {
+      const userId = req.user?.id; // This should work now
 
-    if (!userId) {
-      return res.status(404).json({ message: "User ID not found" });
+      if (!userId) {
+        return res.status(404).json({ message: "User ID not found" });
+      }
+
+      // Replace with actual logic to get user
+      const result = await this.doctorUsecase.getUser(userId);
+      if (!result) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({ user: result });
+    } catch (error) {
+      next(error);
     }
-
-    // Replace with actual logic to get user
-    const result = await this.doctorUsecase.getUser(userId);
-    if (!result) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ user: result });
   }
 
   async refreshToken(req: Request, res: Response, next: NextFunction) {
-    console.log("login is working");
-    const { oldToken } = req.body;
-    const result = await this.doctorUsecase.refreshTokenUsecase(oldToken);
+    try {
+      const { oldToken } = req.body;
+      const result = await this.doctorUsecase.refreshTokenUsecase(oldToken);
 
-    if (result) {
-      console.log("refresh token is workkingggggggggggg", result);
-
-      res.status(200).json({ user: result.userDoc, token: result.token });
-    } else {
-      res.status(401).json({ message: "User is not exits" });
+      if (result) {
+        res.status(200).json({ user: result.userDoc, token: result.token });
+      } else {
+        res.status(401).json({ message: "User is not exits" });
+      }
+    } catch (error) {
+      next(error);
     }
   }
 
   async doctorVerification(req: Request, res: Response, next: NextFunction) {
-    let doctorForm = req.body;
-    const result = await this.doctorUsecase.docVefication(doctorForm);
-    if (!result) {
-      return res.status(400).json({ message: "Verification failed" });
+    try {
+      let doctorForm = req.body;
+      const result = await this.doctorUsecase.docVefication(doctorForm);
+      if (!result) {
+        return res.status(400).json({ message: "Verification failed" });
+      }
+      res
+        .status(200)
+        .json({ message: "Verification successful", data: result });
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json({ message: "Verification successful", data: result });
   }
 
   async getDocData(req: Request, res: Response, next: NextFunction) {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "User Not found" });
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "User Not found" });
+      }
+      const result = await this.doctorUsecase.getDoc(email);
+      return res.status(200).json({ result });
+    } catch (error) {
+      next(error);
     }
-    const result = await this.doctorUsecase.getDoc(email);
-    return res.status(200).json({ result });
   }
 
   async updateDocData(req: Request, res: Response, next: NextFunction) {
-    // const result = await
-    console.log("doctor data is", req.body);
-    let doctorData = req.body;
-    const result = await this.doctorUsecase.updateDoctor(doctorData);
-    console.log("result", result);
-    if (!result) {
-      return res.status(400).json({ message: "User Not found" });
+    try {
+      let {formData,selectedFile} = req.body;
+      console.log('doctorData',formData);
+      console.log('selectedFilezvsZvzsdfaw',selectedFile);
+      
+      const result = await this.doctorUsecase.updateDoctor(formData,selectedFile);
+      if (!result) {
+        return res.status(400).json({ message: "User Not found" });
+      }
+      return res.status(200).json({ message: "Data Updated successfully" });
+    } catch (error) {
+      next(error);
     }
-    return res.status(200).json({ message: "Data Updated successfully" });
   }
 
   async checkEmail(req: Request, res: Response, next: NextFunction) {
-    let { email } = req.body.email;
-    console.log("eemail isssssssssss", email);
-    const result = await this.doctorUsecase.emailVerification(email);
-    console.log("ree", result);
+    try {
+      let { email } = req.body.email;
+      const result = await this.doctorUsecase.emailVerification(email);
+      if (!result) {
+        return res.status(400).json({ message: "User not found" });
+      }
 
-    if (!result) {
-      return res.status(400).json({ message: "User not found" });
+       await this.doctorUsecase.registerUser(result);
+      return res.status(200).json({ message: "Otp send successfully" });
+    } catch (error) {
+      next(error);
     }
-
-    const response = await this.doctorUsecase.registerUser(result);
-    console.log("response", response);
-    return res.status(200).json({ message: "Otp send successfully" });
   }
 
   async forgotPassword(req: Request, res: Response, next: NextFunction) {
-    console.log("eeeee", req.body);
-    const { otp, email } = req.body;
-    const user = await this.doctorUsecase.forgotOtp(otp, email);
-    console.log("user", user);
-    if (!user) {
-      return res.status(400).json({ message: "Otp is not correct" });
+    try {
+      const { otp, email } = req.body;
+      const user = await this.doctorUsecase.forgotOtp(otp, email);
+      if (!user) {
+        return res.status(400).json({ message: "Otp is not correct" });
+      }
+      return res.status(200).json({ message: "Otp is correct" });
+    } catch (error) {
+      next(error);
     }
-    return res.status(200).json({ message: "Otp is correct" });
   }
   async resetPassword(req: Request, res: Response) {
     console.log("doctor server iser", req.body);
   }
 
+  async getDoctorData(req: Request, res: Response){
+    const result = await this.doctorUsecase.retrieveAllDocData();
+    if(!result){
+      res.status(400).json({message: 'Doctor does not exits'})
+    }
+    res.status(200).json({data: result})
+
+  }
 }

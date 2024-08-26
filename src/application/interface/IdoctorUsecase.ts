@@ -12,9 +12,9 @@ export interface IdoctorUsecase{
     refreshTokenUsecase(oldToken:string): Promise<UserLoginResponse| null>;
     docVefication(doctorForm:UserDocument): Promise<UserDocument|null>;
     getDoc(email:string): Promise<UserDocument | null>
-    updateDoctor(doctorForm:UserDocument) : Promise<Boolean| null>;
+    updateDoctor(doctorForm:UserDocument,image:string) : Promise<Boolean| null>;
     emailVerification(email:string): Promise<registerUser| null>
-
     forgotOtp(otp:string,email:string): Promise<returnUser|null>
+    retrieveAllDocData(): Promise<UserDocument []| null>
 
 }
