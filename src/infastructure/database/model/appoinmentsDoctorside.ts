@@ -17,7 +17,7 @@ export interface IDoctorAppointment extends Document {
   date: Date;
   time: string;
   status: 'pending' | 'confirmed' | 'canceled' | 'completed';
-  reason?: string;
+  appointmentType?: string;
   notes?: string;    // Additional notes for the doctor
   createdAt: Date;
   updatedAt: Date;
@@ -51,7 +51,7 @@ const DoctorAppointmentSchema: Schema = new Schema(
       enum: ['pending', 'confirmed', 'canceled', 'completed'],
       default: 'pending',
     },
-    reason: {
+    appointmentType: {
       type: String,
     },
     notes: {

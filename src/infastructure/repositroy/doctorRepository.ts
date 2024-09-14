@@ -129,9 +129,9 @@ export class DoctorRepository implements IDoctorRepository {
     }
   }
 
-  async getUserById(userId: string) {
+  async getUserById(doctorId: string) {
     try {
-      const user = await User.findById(userId);
+      const user = await User.findById(doctorId);
       if (!user) {
         return null;
       }
@@ -224,14 +224,13 @@ export class DoctorRepository implements IDoctorRepository {
     }
   }
 
-  async updateDoc(doctorForm: UserDocument,image:string) {
+  async updateDoc(doctorForm: UserDocument, image: string) {
     try {
-      
-      if(image){
-        doctorForm.profilePic = image
+      if (image) {
+        doctorForm.profilePic = image;
       }
-      console.log('doctorform is', doctorForm);
-      
+      console.log("doctorform is", doctorForm);
+
       const email = doctorForm.email;
       if (!email) {
         return false;
@@ -310,42 +309,176 @@ export class DoctorRepository implements IDoctorRepository {
     }
   }
 
-  async retrieveDocData(){
+  async retrieveDocData() {
     const doctorData = await User.find();
-    if(!doctorData){
-      return null
+    if (!doctorData) {
+      return null;
     }
-    return doctorData
+    return doctorData;
   }
 
-  async savingAppoinments(email:string,user:any,date:string,time:string,appointmentType:string){
+  async savingAppoinments(
+    email: string,
+    user: any,
+    date: string,
+    time: string,
+    appointmentType: string
+  ) {
     try {
-      const doctor = await User.findOne({email});
-    console.log('appoinmented doctor is',doctor?._id);
-    const userData = user;
+      const doctor = await User.findOne({ email });
+      console.log("appoinmented doctor is", doctor);
+      const userData = user;
+      console.log('the user is ',user)
 
-    const newAppointment = new DoctorAppointment({
-      doctorId: doctor?._id,
-      user:{
-        firstname: userData.firstname,
-        lastname: userData.lastname,
-        email: userData.email,
-        phoneNumber: userData.phonenumber,
-        profilePic: userData?.profilePic
-      },
-      date: new Date(date), 
-      time,
-      status: 'pending', 
-      reason: appointmentType,
-    });
+      const newAppointment = new DoctorAppointment({
+        doctorId: doctor?._id,
+        user: {
+          firstname: userData.firstname,
+          lastname: userData.lastname,
+          email: userData.email,
+          phoneNumber: userData.phonenumber,
+          profilePic: userData?.profilePic,
+        },
+        date: new Date(date),
+        time,
+        status: "pending",
+        appointmentType: appointmentType,
+      });
 
-    const savedAppointment = await newAppointment.save();
-    console.log('Appointment saved:', savedAppointment);
-    
+      const savedAppointment = await newAppointment.save();
+      console.log("Appointment saved:", savedAppointment);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    
-    
+  }
+  async cancelBookingRepo(cancelDoctorEmail: string) {
+    try {
+      console.log("Attempting to delete appointment for:", cancelDoctorEmail);
+
+      // Step 1: Find the doctor by email
+      const doctor = await User.findOne({ email: cancelDoctorEmail }).exec();
+
+      if (!doctor) {
+        console.log("No doctor found with this email.");
+        return null;
+      }
+
+      // Step 2: Delete the appointment by doctor ID
+      const result = await DoctorAppointment.findOneAndDelete({
+        doctorId: doctor._id,
+      }).exec();
+
+      if (result) {
+        console.log("Appointment found and deleted:", result);
+      } else {
+        console.log("No appointment found for this doctor.");
+        return null;
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error finding or deleting appointment:", error);
+      throw new Error("Error finding or deleting appointment.");
+    }
+  }
+  async selectedDoctorData(doctorEmail: string) {
+    try {
+      console.log("Attempting to fetch doctorData for:", doctorEmail);
+
+      // Step 1: Find the doctor by email
+      const doctor = await User.findOne({ email: doctorEmail }).exec();
+
+      if (!doctor) {
+        console.log("No doctor found with this email.");
+        return null;
+      }
+
+      return doctor;
+      // return result;
+    } catch (error) {
+      console.error("Error finding or deleting appointment:", error);
+      throw new Error("Error finding or deleting appointment.");
+    }
+  }
+  async offlineAppoinmentsRepo() {
+    try {
+
+      // Step 1: Find the doctor by email
+      const offlineAppoinments = await DoctorAppointment.find();
+      
+      if (!offlineAppoinments) {
+        console.log("No doctor found with this email.");
+        return null;
+      }
+      console.log('offlineAppoinments is',offlineAppoinments)
+
+      return offlineAppoinments;
+      // return result;
+    } catch (error) {
+      console.error("Error finding or deleting appointment:", error);
+      throw new Error("Error finding or deleting appointment.");
+    }
+  }
+
+  async appointmentAcceptedRepo(doctorEmail: string, userEmail: string) {
+    try {
+      // Fetch the appointment that matches both doctor email and userId
+      const doctorData = await User.findOne({email:doctorEmail})
+      if(!doctorData){
+        return null
+      }
+      let result = await DoctorAppointment.findOne({
+        'user.email': userEmail,
+        doctorId: doctorData._id
+      });
+  
+      console.log('Result:', result);
+  
+      // If no result is found, return false
+      if (!result) {
+        console.log('No appointment found matching the criteria.');
+        return false;
+      }
+  
+      // Update the status to 'confirmed'
+      result.status = 'confirmed';
+      await result.save();
+  
+      return true;
+    } catch (error) {
+      console.error('Error finding appointment:', error);
+      throw new Error('Error finding appointment.');
+    }
+  }
+
+  async appointmentRejectedRepo(doctorEmail: string, userEmail: string) {
+    try {
+      // Fetch the appointment that matches both doctor email and userId
+      const doctorData = await User.findOne({email:doctorEmail})
+      if(!doctorData){
+        return null
+      }
+      let result = await DoctorAppointment.findOne({
+        'user.email': userEmail,
+        doctorId: doctorData._id
+      });
+  
+      console.log('Result:', result);
+  
+      // If no result is found, return false
+      if (!result) {
+        console.log('No appointment found matching the criteria.');
+        return false;
+      }
+  
+      // Update the status to 'confirmed'
+      result.status = 'canceled';
+      await result.save();
+  
+      return true;
+    } catch (error) {
+      console.error('Error finding appointment:', error);
+      throw new Error('Error finding appointment.');
+    }
   }
 }

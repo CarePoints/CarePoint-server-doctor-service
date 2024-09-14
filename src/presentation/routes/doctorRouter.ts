@@ -26,6 +26,11 @@ router.post('/checkEmail', controller.checkEmail.bind(controller));
 router.post('/forgotPassword', controller.forgotPassword.bind(controller));
 router.post('/resetPassword',controller.resetPassword.bind(controller))
 router.get('/getDoctorData',controller.getDoctorData.bind(controller))
+router.post('/cancelBooking', controller.cancelBooking.bind(controller))
+router.post('/selectedDoctorForMapTracking', controller.selectedDoctorForMapTracking.bind(controller))
+router.get('/appointments', controller.offlineAppoinments.bind(controller))
+router.post('/appointmentAccepted', controller.appointmentAccepted.bind(controller))
+router.post('/appointmentRejected', controller.appointmentRejected.bind(controller))
 
 
 

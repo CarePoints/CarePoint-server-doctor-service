@@ -166,6 +166,8 @@ export class DoctorController {
       const { otp, email } = req.body;
       const user = await this.doctorUsecase.forgotOtp(otp, email);
       if (!user) {
+        console.log("Otp is not correct",user);
+        
         return res.status(400).json({ message: "Otp is not correct" });
       }
       return res.status(200).json({ message: "Otp is correct" });
@@ -183,6 +185,83 @@ export class DoctorController {
       res.status(400).json({message: 'Doctor does not exits'})
     }
     res.status(200).json({data: result})
+  }
 
+  async cancelBooking(req:Request, res:Response){
+    try{
+      // let result = await this.userUsecase.findBookedDoctors()
+      console.log('it woring mahm',req.body);
+      const {cancelDoctor} = req.body;
+      let result = await this.doctorUsecase.cancelBooking(cancelDoctor)
+    
+      return res.status(200).json({message:'succees', result})
+    }catch(error){
+      console.log('error is',error);
+    }
+  }
+
+  async selectedDoctorForMapTracking(req:Request, res:Response){
+    try{
+      // let result = await this.userUsecase.findBookedDoctors()
+      console.log('sdfdsf',req.body);
+      const {doctorEmail} = req.body;
+      let result = await this.doctorUsecase.selectedDoctor(doctorEmail)
+    
+      return res.status(200).json({message:'succees', result})
+    }catch(error){
+      console.log('error is',error);
+    }
+  }
+
+  async offlineAppoinments(req:Request, res:Response){
+    try{
+      // let result = await this.userUsecase.findBookedDoctors()
+      console.log('offlineAppoinments controller is working')
+      let result = await this.doctorUsecase.offlineAppoinments()      
+    
+      return res.status(200).json({message:'succees', result})
+    }catch(error){
+      console.log('error is',error);
+    }
+  }
+  async appointmentAccepted(req: Request, res: Response) {
+    try {
+      console.log('Request body:', req.body);
+      const { doctorEmail,userEmail } = req.body;
+  
+      if (!doctorEmail) {
+        return res.status(400).json({ message: 'doctorEmail is missing' });
+      }
+      if (!userEmail) {
+        return res.status(400).json({ message: 'userId is missing' });
+      }
+  
+      const result = await this.doctorUsecase.appointmentAccepted(doctorEmail,userEmail);
+  
+      return res.status(200).json({ message: 'Success', result });
+    } catch (error) {
+      console.log('Error:', error);
+      return res.status(500).json({ message: 'An error occurred', error });
+    }
+  }
+  async appointmentRejected(req: Request, res: Response) {
+    try {
+      console.log('Request body:', req.body);
+      const { doctorEmail,userEmail } = req.body;
+  
+      if (!doctorEmail) {
+        return res.status(400).json({ message: 'doctorEmail is missing' });
+      }
+      if (!userEmail) {
+        return res.status(400).json({ message: 'userId is missing' });
+      }
+  
+      const result = await this.doctorUsecase.appointmentRejected(doctorEmail,userEmail);
+  
+      return res.status(200).json({ message: 'Success', result });
+    } catch (error) {
+      console.log('Error:', error);
+      return res.status(500).json({ message: 'An error occurred', error });
+    }
   }
 }

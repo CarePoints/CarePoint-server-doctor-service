@@ -1,4 +1,5 @@
 import { registerUser } from "../../domain/entities/signUpUser";
+import { IDoctorAppointment } from "../database/model/appoinmentsDoctorside";
 import { UserDocument } from "../database/model/userModel";
 export interface UserLoginResponse {
     token: string;
@@ -35,4 +36,10 @@ export interface IDoctorRepository{
     forgotOtpVerify(otp:string,email:string) : Promise<UserDocument|null>    
     retrieveDocData() : Promise<UserDocument[]| null>    
     savingAppoinments(email:string,user:string,Date:string,time:string,appointmentType:string):Promise<void>
+    cancelBookingRepo(cancelDoctor:string): Promise<any | null>
+    selectedDoctorData(doctorEmail:string): Promise<UserDocument | null>
+    offlineAppoinmentsRepo(): Promise<any | null>
+    appointmentAcceptedRepo(doctorEmail:string,userEmail:string): Promise<boolean| null>
+    appointmentRejectedRepo(doctorEmail:string,userEmail:string): Promise<boolean| null>
+
 }

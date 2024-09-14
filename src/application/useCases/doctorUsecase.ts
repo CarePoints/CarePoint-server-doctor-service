@@ -114,4 +114,39 @@ export class DoctorUseCase implements IdoctorUsecase {
     const result = await this.repository.retrieveDocData()
     return result
   }
+  async cancelBooking(cancelDoctor:string){
+    const result = await this.repository.cancelBookingRepo(cancelDoctor)
+    if(!result){
+      return null
+    }
+    return result
+  }
+  async selectedDoctor(doctorEmail:string){
+    const result = await this.repository.selectedDoctorData(doctorEmail)
+    if(!result){
+      return null
+    }
+    return result
+  }
+  async offlineAppoinments(){
+    const result = await this.repository.offlineAppoinmentsRepo()
+    if(!result){
+      return null
+    }
+    return result
+  }
+    async appointmentAccepted(doctorEmail:string,userEmail:string){
+    const result = await this.repository.appointmentAcceptedRepo(doctorEmail,userEmail)
+    if(!result){
+      return false
+    }
+    return true
+  }
+    async appointmentRejected(doctorEmail:string,userEmail:string){
+    const result = await this.repository.appointmentRejectedRepo(doctorEmail,userEmail)
+    if(!result){
+      return false
+    }
+    return true
+  }
 }

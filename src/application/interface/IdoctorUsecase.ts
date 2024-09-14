@@ -1,5 +1,6 @@
 import { returnUser } from "../../domain/entities/returnUser";
 import { registerUser } from "../../domain/entities/signUpUser";
+import { IDoctorAppointment } from "../../infastructure/database/model/appoinmentsDoctorside";
 import { UserDocument } from "../../infastructure/database/model/userModel";
 import { UserLoginResponse } from "../../infastructure/interface/IDoctorRepository";
 
@@ -16,5 +17,10 @@ export interface IdoctorUsecase{
     emailVerification(email:string): Promise<registerUser| null>
     forgotOtp(otp:string,email:string): Promise<returnUser|null>
     retrieveAllDocData(): Promise<UserDocument []| null>
+    cancelBooking(cancelDoctor:string): Promise<any | null>
+    selectedDoctor(doctorEmail:string): Promise<UserDocument | null>
+    offlineAppoinments(): Promise<IDoctorAppointment | null>
+    appointmentAccepted(doctorEmail:string,userEmail:string): Promise<boolean | null>
+    appointmentRejected(doctorEmail:string,userEmail:string): Promise<boolean | null>
 
 }
