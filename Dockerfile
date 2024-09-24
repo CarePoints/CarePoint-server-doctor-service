@@ -20,7 +20,7 @@ COPY . .
 RUN tsc
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 5000
 
 # Run the application
 CMD ["node", "dist/server.js"]

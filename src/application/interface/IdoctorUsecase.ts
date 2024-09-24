@@ -22,5 +22,5 @@ export interface IdoctorUsecase{
     offlineAppoinments(): Promise<IDoctorAppointment | null>
     appointmentAccepted(doctorEmail:string,userEmail:string): Promise<boolean | null>
     appointmentRejected(doctorEmail:string,userEmail:string): Promise<boolean | null>
-
+    sendPrescriptionUseCase(patientEmail:string,originalname:string,buffer:any): Promise<boolean | null>
 }

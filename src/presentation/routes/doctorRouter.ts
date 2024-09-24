@@ -1,11 +1,13 @@
 import express from 'express';
 const router = express.Router()
-
+import multer from 'multer'
+const upload = multer();
 
 import {DoctorRepository} from '../../infastructure/repositroy/doctorRepository';
 import {DoctorUseCase} from '../../application/useCases/doctorUsecase';
 import {DoctorController} from '../../presentation/controllers/doctorController';
 import authenticationToken from '../../utils/authMiddleware';
+import { uploadSingleImage } from '../../middleware/uploadMiddleware';
 
 const repository = new DoctorRepository();
 const doctor = new DoctorUseCase(repository);
@@ -31,6 +33,8 @@ router.post('/selectedDoctorForMapTracking', controller.selectedDoctorForMapTrac
 router.get('/appointments', controller.offlineAppoinments.bind(controller))
 router.post('/appointmentAccepted', controller.appointmentAccepted.bind(controller))
 router.post('/appointmentRejected', controller.appointmentRejected.bind(controller))
+router.post('/upload',uploadSingleImage, controller.addPrescription.bind(controller))
+router.post("/sendPrescription",upload.single('file'), controller.sendPrescription.bind(controller))
 
 
 

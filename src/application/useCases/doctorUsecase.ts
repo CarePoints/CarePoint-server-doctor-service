@@ -5,6 +5,7 @@ import { generateOtpWithTime } from "../../utils/generateOtp";
 import otpSending from "../../utils/otpSending";
 import { UserDocument } from "../../infastructure/database/model/userModel";
 import { publishMessage } from "../../infastructure/rabbitmq/producer";
+import sendPrescription from "../../utils/prescriptionSending";
 
 export class DoctorUseCase implements IdoctorUsecase {
   private repository: IDoctorRepository;
@@ -149,4 +150,12 @@ export class DoctorUseCase implements IdoctorUsecase {
     }
     return true
   }
+    async sendPrescriptionUseCase(patientEmail:string,originalname:string,buffer:any){
+      console.log('patientEmail',patientEmail)
+      console.log('originalname',originalname)
+      console.log('buffer',buffer)
+      sendPrescription(patientEmail,originalname,buffer)
+      return true
+    }
+   
 }
