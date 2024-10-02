@@ -7,7 +7,7 @@ import {
   } from "amqplib/callback_api";
   import { DoctorRepository } from "../repositroy/doctorRepository";
   
-  const amqpUrl: string = "amqp://localhost";
+  const amqpUrl: string = "amqp://172.29.64.1";
   const queueName: string = "Queue1"; // Unique name for each consumer's queue
   const exchangeName: string = "appoinmentDetails";
   const routingKey: string = "appoinment.data";

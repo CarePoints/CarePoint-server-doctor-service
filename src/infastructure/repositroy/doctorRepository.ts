@@ -7,7 +7,7 @@ import {
   verifyToken,
 } from "../../utils/authUtlis";
 import { User, UserDocument } from "../database/model/userModel";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { AppError } from "../../middleware/errorMiddleware";
 import DoctorAppointment from "../database/model/appoinmentsDoctorside";
 
